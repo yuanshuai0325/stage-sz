@@ -59,17 +59,19 @@ def add_use(request):
     except Exception as e:
         ret = "用户 %s 添加失败" % name
         return JsonResponse({'exec':'false', 'ret': ret})
-    adddata = Use(6,9,7,1,1)
-    adddata.save()
     try:
+        day = time.strftime("%Y%m%d")
         data = User.objects.get(name=name[0])
         id = data.id
+        for item in sn:
+            if Use.objects.filter(sn=item):
+                ret += ',sn 为 %s 已在用' % item
+                return JsonResponse({'exec':'false', 'ret': ret})
         for sub,item in enumerate(device):
-            print(sn[sub],comment[sub],item,id)
-            adddata = Use(sn[sub],comment[sub],item,id)
+            adddata = Use(sn=sn[sub],comment=comment[sub],day=day,device_id=item,user_id=id)
             adddata.save()
             ret += ',数据 %s 添加成功' % sub
         return JsonResponse({'exec':'true', 'ret': ret})
     except Exception as e:
-        ret += "数据添加失败" % name
+        ret += ",数据添加失败" % name
         return JsonResponse({'exec':'false', 'ret': ret})

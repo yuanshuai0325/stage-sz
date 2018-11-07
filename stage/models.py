@@ -11,10 +11,12 @@ class Device(models.Model):
 class Use(models.Model):
     sn = models.CharField(max_length=30)
     comment = models.CharField(max_length=50)
+    day = models.CharField(max_length=10)
     user = models.ForeignKey('User',on_delete=models.CASCADE)
     device = models.ForeignKey('Device',on_delete=models.CASCADE)
 
 class Storge(models.Model):    
-    device = models.ForeignKey('Device',on_delete=models.CASCADE)
     sn = models.CharField(max_length=30)
     comment = models.CharField(max_length=50)
+    day = models.CharField(max_length=10)
+    device = models.ForeignKey('Device',on_delete=models.CASCADE)
