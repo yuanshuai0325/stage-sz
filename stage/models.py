@@ -15,7 +15,7 @@ class Use(models.Model):
     user = models.ForeignKey('User',on_delete=models.CASCADE)
     device = models.ForeignKey('Device',on_delete=models.CASCADE)
 
-class Storge(models.Model):    
+class Storage(models.Model):    
     sn = models.CharField(max_length=30)
     comment = models.CharField(max_length=50)
     day = models.CharField(max_length=10)

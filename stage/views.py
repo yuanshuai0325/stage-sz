@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse
-from stage.models import Device, User, Use
+from stage.models import Device, User, Use, Storage
 #from werkzeug.security import generate_password_hash, check_password_hash
 
 #import jwt
@@ -68,10 +68,45 @@ def add_use(request):
                 ret += ',sn 为 %s 已在用' % item
                 return JsonResponse({'exec':'false', 'ret': ret})
         for sub,item in enumerate(device):
+            if Storage.objects.filter(sn=sn[sub]):
+                Storage.objects.filter(sn=sn[sub]).delete()
+                ret += ',sn 为 %s 从库存中移除' % sn[sub]
             adddata = Use(sn=sn[sub],comment=comment[sub],day=day,device_id=item,user_id=id)
             adddata.save()
             ret += ',数据 %s 添加成功' % sub
         return JsonResponse({'exec':'true', 'ret': ret})
     except Exception as e:
-        ret += ",数据添加失败" % name
+        ret += ", %s 数据添加失败" % name
+        return JsonResponse({'exec':'false', 'ret': ret})
+
+def add_storage(request):
+    data = request.POST.lists()
+    ret = 'aaa'
+    for item in data:
+        if 'device' in item:
+            device = item[1]
+        if 'sn' in item:
+            sn = item[1]
+        if 'comment' in item:
+            comment = item[1]
+    if len(device) != len(sn):
+        ret += "设备数量与sn数量不等"
+        print(1)
+        return JsonResponse({'exec':'false', 'ret':ret})
+    try:
+        day = time.strftime("%Y%m%d")
+        for item in sn:
+            if Use.objects.filter(sn=item):
+                ret += ',sn 为 %s 已在用' % item
+                print(2)
+                print(ret)
+                return JsonResponse({'exec':'false', 'ret': ret})
+        for sub,item in enumerate(device):
+            adddata = Storage(sn=sn[sub],comment=comment[sub],day=day,device_id=item)
+            adddata.save()
+            ret += ',数据 %s 添加成功' % sub
+            print(3)
+        return JsonResponse({'exec':'true', 'ret': ret})
+    except Exception as e:
+        ret += ", %s 数据添加失败" % name
         return JsonResponse({'exec':'false', 'ret': ret})
