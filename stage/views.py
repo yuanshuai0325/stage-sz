@@ -24,7 +24,7 @@ def add_device(request):
         ret = "设备 %s 添加失败" % name
         return JsonResponse({'exec':'false', 'ret': ret})
 
-def search_device(request):
+def sdevice(request):
     all_device = []
     try:
         data = Device.objects.all()
@@ -81,7 +81,7 @@ def add_use(request):
 
 def add_storage(request):
     data = request.POST.lists()
-    ret = 'aaa'
+    ret = '库存添加, '
     for item in data:
         if 'device' in item:
             device = item[1]
@@ -109,4 +109,34 @@ def add_storage(request):
         return JsonResponse({'exec':'true', 'ret': ret})
     except Exception as e:
         ret += ", %s 数据添加失败" % name
+        return JsonResponse({'exec':'false', 'ret': ret})
+
+def search_device(request):
+    data = request.POST.lists()
+    ret = '查找 sn'
+    for item in data:
+        if 'sn' in item:
+            sn = item[1][0]
+        if 'select' in item:
+            select = item[1][0]
+    try:
+        if Use.objects.filter(sn=sn):
+            if not select:
+                data = Use.objects.filter(sn=sn).values('sn','comment','day','user__name','device__name')
+            else:
+                data = Use.objects.filter(sn=sn,device_id=select).values('sn','comment','day','user__name','device__name')
+            ret = data[0]
+            return JsonResponse({'exec':'true', 'ret': ret})
+        elif Storage.objects.filter(sn=sn):
+            if not select:
+                data = Storage.objects.filter(sn=sn).values('sn','comment','day','device__name')
+            else:
+                data = Use.objects.filter(sn=sn,device_id=select).values('sn','comment','day','user__name','device__name')
+            ret = data[0]
+            return JsonResponse({'exec':'true', 'ret': ret})
+        else:
+            ret += ',未找到硬件'
+            return JsonResponse({'exec':'false', 'ret': ret})
+    except Exception as e:
+        ret += '失败'
         return JsonResponse({'exec':'false', 'ret': ret})
