@@ -140,3 +140,25 @@ def search_device(request):
     except Exception as e:
         ret += '失败'
         return JsonResponse({'exec':'false', 'ret': ret})
+
+def search_all_use(request):
+    try:
+        ret = []
+        data = Use.objects.all()
+        for item in data:
+            ret.append({"id":item.id,"user":item.user.name,"sn":item.sn,"comment":item.comment,"day":item.day,"device":item.device.name})
+        return JsonResponse({'exec':'true', 'ret': ret})
+    except Exception as e:
+        ret = '获取所有使用列表失败'
+        return JsonResponse({'exec':'false', 'ret': ret})
+
+def search_all_storage(request):
+    try:
+        ret = []
+        data = Storage.objects.all()
+        for item in data:
+            ret.append({"id":item.id,"sn":item.sn,"comment":item.comment,"day":item.day,"device":item.device.name})
+        return JsonResponse({'exec':'true', 'ret': ret})
+    except Exception as e:
+        ret = '获取所有库存列表失败'
+        return JsonResponse({'exec':'false', 'ret': ret})
