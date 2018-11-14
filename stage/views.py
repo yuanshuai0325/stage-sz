@@ -143,22 +143,45 @@ def search_device(request):
 
 def search_all_use(request):
     try:
+        curpage = int(request.POST.get("curpage"))
+        pagesize = int(request.POST.get("pagesize"))
         ret = []
         data = Use.objects.all()
+        total = data.count()
+        data = data[(curpage-1) * pagesize: curpage * pagesize]
         for item in data:
             ret.append({"id":item.id,"user":item.user.name,"sn":item.sn,"comment":item.comment,"day":item.day,"device":item.device.name})
+        ret.append({"total":total})
         return JsonResponse({'exec':'true', 'ret': ret})
     except Exception as e:
+        print(e)
         ret = '获取所有使用列表失败'
         return JsonResponse({'exec':'false', 'ret': ret})
 
 def search_all_storage(request):
     try:
+        curpage = int(request.POST.get("curpage"))
+        pagesize = int(request.POST.get("pagesize"))
         ret = []
         data = Storage.objects.all()
+        total = data.count()
+        data = data[(curpage-1) * pagesize: curpage * pagesize]
         for item in data:
             ret.append({"id":item.id,"sn":item.sn,"comment":item.comment,"day":item.day,"device":item.device.name})
+        ret.append({"total":total})
         return JsonResponse({'exec':'true', 'ret': ret})
     except Exception as e:
         ret = '获取所有库存列表失败'
         return JsonResponse({'exec':'false', 'ret': ret})
+
+def update_device(request):
+    id = request.POST.get('id')
+    user = request.POST.get('user')
+    device = request.POST.get('device')
+    sn = request.POST.get('sn')
+    comment = request.POST.get('comment')
+    day = request.POST.get('day')
+    print(id,user,device,sn,comment,day)
+    ret = ''
+    return JsonResponse({'exec':'false', 'ret': ret})
+
