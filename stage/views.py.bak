@@ -115,31 +115,34 @@ def add_storage(request):
         return JsonResponse({'exec':'false', 'ret': ret})
 
 def search_device(request):
-    sn = request.POST.get("sn")
-    select = request.POST.get("select")
-    ret = '查找'
-    if select == "false":
-        if Use.objects.filter(sn=sn):
-            data = Use.objects.filter(sn=sn).values('id','sn','comment','day','user__name','device__name')
-        else:
-            data = Storage.objects.filter(sn=sn).values('id','sn','comment','day','device__name')
-    else:
-        if User.objects.filter(name=sn):
-            id = User.objects.get(name=sn).id
-            data = Use.objects.filter(user=id).values('id','sn','comment','day','user__name','device__name')
-        else:
-            ret = '用户不存在'
-            return JsonResponse({'exec':'false', 'ret': ret})
-    data = list(data)
+    data = request.POST.lists()
+    ret = '查找 sn'
     for item in data:
-        if item.get('user__name'):
-            item['user'] = item.pop('user__name')
-        item['device'] = item.pop('device__name')
-    if not data:
-        ret = "未查询到符合条目"
+        if 'sn' in item:
+            sn = item[1][0]
+        if 'select' in item:
+            select = item[1][0]
+    try:
+        if Use.objects.filter(sn=sn):
+            if not select:
+                data = Use.objects.filter(sn=sn).values('id','sn','comment','day','user__name','device__name')
+            else:
+                data = Use.objects.filter(sn=sn,device_id=select).values('id','sn','comment','day','user__name','device__name')
+            ret = [data[0]]
+            return JsonResponse({'exec':'true', 'ret': ret})
+        elif Storage.objects.filter(sn=sn):
+            if not select:
+                data = Storage.objects.filter(sn=sn).values('id','sn','comment','day','device__name')
+            else:
+                data = Use.objects.filter(sn=sn,device_id=select).values('id','sn','comment','day','user__name','device__name')
+            ret = [data[0]]
+            return JsonResponse({'exec':'true', 'ret': ret})
+        else:
+            ret += ',未找到硬件'
+            return JsonResponse({'exec':'false', 'ret': ret})
+    except Exception as e:
+        ret += '失败'
         return JsonResponse({'exec':'false', 'ret': ret})
-    ret = data
-    return JsonResponse({'exec':'true', 'ret': ret})
 
 def search_all_use(request):
     try:
