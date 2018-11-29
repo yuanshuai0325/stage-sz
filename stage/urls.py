@@ -1,7 +1,8 @@
 from django.urls import path
-from stage.views import add_device, sdevice, add_use, add_storage, search_device, search_all_use, search_all_storage, update_device, update_use, update_storage, update_delete
+from stage.views import login, add_device, sdevice, add_use, add_storage, search_device, search_all_use, search_all_storage, update_device, update_use, update_storage, update_delete
 
 urlpatterns = [
+    path(r'login', login),
     path(r'adevice', add_device),
     path(r'sdevice', sdevice),
     path(r'adduse', add_use),

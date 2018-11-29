@@ -3,6 +3,17 @@ from django.http import JsonResponse
 from stage.models import Device, User, Use, Storage
 #from werkzeug.security import generate_password_hash, check_password_hash
 
+# django 后台User表 Token表
+from django.contrib.auth.models import User as Auser
+from rest_framework.authtoken.models import Token
+
+# Token认证
+from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+
+# django 密码校验
+from django.contrib.auth.hashers import make_password, check_password
+
 #import jwt
 import os
 import time
@@ -10,6 +21,25 @@ import shutil
 
 # Create your views here.
 
+def login(request):
+    name = request.POST.get('name')
+    passwd = request.POST.get('passwd')
+    try:
+        #dj_passwd = make_password(passwd, None, 'pbkdf2_sha256')
+        getpass = Auser.objects.filter(username=name).values("password")[0]['password']
+        if check_password(passwd,getpass):
+            userid = Auser.objects.filter(username=name).values('id')[0]['id']
+            token = 'token ' + Token.objects.filter(user_id=userid).values('key')[0]['key'] if Token.objects.filter(user_id=userid) else  Token.objects.create(user_id=userid)
+            ret = {'token': token,}
+            print(ret)
+            return JsonResponse({'exec':'true', 'ret': ret})
+        else:
+            return JsonResponse({'exec':'false', 'ret': "用户不存在或密码错误"})
+    except Exception as e:
+        return JsonResponse({'exec':'false', 'ret': '内部错误'})
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
 def add_device(request):
     name = request.GET['name']
     if Device.objects.filter(name=name):
@@ -24,6 +54,8 @@ def add_device(request):
         ret = "设备 %s 添加失败" % name
         return JsonResponse({'exec':'false', 'ret': ret})
 
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
 def sdevice(request):
     all_device = []
     try:
@@ -35,6 +67,8 @@ def sdevice(request):
         ret = "设备名称获取失败 %s " % e
         return JsonResponse({'exec':'false', 'ret':ret})
 
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
 def add_use(request):
     data = request.POST.lists()
     for item in data:
@@ -79,6 +113,8 @@ def add_use(request):
         ret += ", %s 数据添加失败" % name
         return JsonResponse({'exec':'false', 'ret': ret})
 
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
 def add_storage(request):
     data = request.POST.lists()
     ret = '库存添加, '
@@ -114,6 +150,8 @@ def add_storage(request):
         ret += ", %s 数据添加失败" % name
         return JsonResponse({'exec':'false', 'ret': ret})
 
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
 def search_device(request):
     sn = request.POST.get("sn")
     select = request.POST.get("select")
@@ -141,6 +179,8 @@ def search_device(request):
     ret = data
     return JsonResponse({'exec':'true', 'ret': ret})
 
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
 def search_all_use(request):
     try:
         curpage = int(request.POST.get("curpage"))
@@ -158,6 +198,8 @@ def search_all_use(request):
         ret = '获取所有使用列表失败'
         return JsonResponse({'exec':'false', 'ret': ret})
 
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
 def search_all_storage(request):
     try:
         curpage = int(request.POST.get("curpage"))
@@ -174,6 +216,8 @@ def search_all_storage(request):
         ret = '获取所有库存列表失败'
         return JsonResponse({'exec':'false', 'ret': ret})
 
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
 def update_device(request):
     id = request.POST.get('id')
     user = request.POST.get('user')
@@ -209,6 +253,8 @@ def update_device(request):
         return JsonResponse({'exec':'false', 'ret': ret})
 
 
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
 def update_use(request):
     id = request.POST.get("id")
     user = request.POST.get("user")
@@ -234,6 +280,8 @@ def update_use(request):
         ret += ",转使用失败"
         return JsonResponse({'exec':'false', 'ret': ret})
 
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
 def update_storage(request):
     id = request.POST.get("id")
     user = request.POST.get("user")
@@ -252,6 +300,8 @@ def update_storage(request):
         ret += ",转库存失败"
         return JsonResponse({'exec':'false', 'ret': ret})
 
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
 def update_delete(request):
     try:
         id = request.POST.get("id")

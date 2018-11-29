@@ -20,3 +20,4 @@ class Storage(models.Model):
     comment = models.CharField(max_length=50)
     day = models.CharField(max_length=10)
     device = models.ForeignKey('Device',on_delete=models.CASCADE)
+
